@@ -147,6 +147,9 @@
         "mac": "cmd+alt+u",
         "when": "editorFocus"
       }
+    ],
+    "javaExtensions": [
+      "javaExtensions"
     ]
   },
   "scripts": {

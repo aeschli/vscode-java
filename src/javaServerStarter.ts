@@ -31,7 +31,7 @@ export function awaitServerConnection(port): Thenable<StreamInfo> {
 }
 	
 
-export function runServer(workspacePath, javaConfig): Thenable<StreamInfo> {
+export function runServer(workspacePath, extensionsPath, javaConfig): Thenable<StreamInfo> {
 	return requirements.resolveRequirements().catch(error => {
 		//show error
 		window.showErrorMessage(error.message, error.label).then((selection) => {
@@ -45,7 +45,7 @@ export function runServer(workspacePath, javaConfig): Thenable<StreamInfo> {
 		return new Promise<StreamInfo>(function (resolve, reject) {
 
 			let child = path.resolve(requirements.java_home + '/bin/java');
-			let params = prepareParams(requirements, javaConfig, workspacePath);
+			let params = prepareParams(requirements, javaConfig, workspacePath, extensionsPath);
 			if (!params) {
 				return reject('Can not determine Java launch parameters for server');
 			}
@@ -59,10 +59,10 @@ export function runServer(workspacePath, javaConfig): Thenable<StreamInfo> {
 	});
 }
 
-function prepareParams(requirements, javaConfiguration, workspacePath) {
+function prepareParams(requirements, javaConfiguration, workspacePath, linksFolderPath) {
 	let params = [];
 	if (DEBUG) {
-		params.push('-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044');
+		params.push('-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=1044');
 		// suspend=y is the default. Use this form if you need to debug the server startup code:
 		//  params.push('-agentlib:jdwp=transport=dt_socket,server=y,address=1044');
 	}
@@ -76,6 +76,9 @@ function prepareParams(requirements, javaConfiguration, workspacePath) {
 	params.push('-Declipse.application=org.eclipse.jdt.ls.core.id1');
 	params.push('-Dosgi.bundles.defaultStartLevel=4');
 	params.push('-Declipse.product=org.eclipse.jdt.ls.core.product');
+	if (linksFolderPath) {
+		params.push('-Dorg.eclipse.equinox.p2.reconciler.dropins.directory=' + linksFolderPath);
+	}
 	if (DEBUG) {
 		params.push('-Dlog.protocol=true');
 		params.push('-Dlog.level=ALL');

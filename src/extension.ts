@@ -2,7 +2,8 @@
 'use strict';
 
 import * as path from 'path';
-import { workspace, ExtensionContext, window, StatusBarAlignment, commands, ViewColumn, Uri, CancellationToken, TextDocumentContentProvider, TextEditor, WorkspaceConfiguration, languages, IndentAction, ProgressLocation, Progress } from 'vscode';
+import * as fs from 'fs';
+import { workspace, ExtensionContext, extensions, window, StatusBarAlignment, commands, ViewColumn, Uri, CancellationToken, TextDocumentContentProvider, TextEditor, WorkspaceConfiguration, languages, IndentAction, ProgressLocation, Progress } from 'vscode';
 import { LanguageClient, LanguageClientOptions, Position as LSPosition, Location as LSLocation } from 'vscode-languageclient';
 import { runServer, awaitServerConnection } from './javaServerStarter';
 import { Commands } from './commands';
@@ -55,16 +56,33 @@ export function activate(context: ExtensionContext) {
 					}
 				]
 			});
-
 			let storagePath = context.storagePath;
 			if (!storagePath) {
 				storagePath = getTempWorkspace();
 			}
+
+			let extensions = collectExtensions();
+			let linksFolderPath = null;
+			if (extensions.length) {
+				linksFolderPath = path.resolve(storagePath + '/links');
+				if (!fs.existsSync(linksFolderPath)) {
+					fs.mkdirSync(linksFolderPath);
+				}
+				let files = fs.readdirSync(linksFolderPath);
+				for (let file of files) {
+					fs.unlinkSync(path.join(linksFolderPath, file));
+				}
+				let i = 0;
+				for (let extension of extensions) {
+					fs.writeFileSync(path.join(linksFolderPath,  i + '.link'), 'path=' + extension);
+				}
+			}
+			
 			let workspacePath = path.resolve(storagePath + '/jdt_ws');
 			let serverOptions;
 			let port = process.env['SERVER_PORT'];
 			if (!port) {
-				serverOptions = runServer.bind(null, workspacePath, getJavaConfiguration());
+				serverOptions = runServer.bind(null, workspacePath, linksFolderPath, getJavaConfiguration());
 			} else {
 				serverOptions = awaitServerConnection.bind(null, port);
 			}
@@ -330,4 +348,20 @@ function openServerLogFile(workspacePath): Thenable<boolean> {
 			}
 			return didOpen;
 		});
+}
+
+function collectExtensions() : string[] {
+	let result = [];
+	for (let extension of extensions.all) {
+		let contributesSection = extension.packageJSON['contributes'];
+		if (contributesSection) {
+			let javaExtensions = contributesSection['javaExtensions'];
+			if (Array.isArray(javaExtensions) && javaExtensions.length) {
+				for (let javaExtensionPath of javaExtensions) {
+					result.push(path.resolve(extension.extensionPath, javaExtensionPath));
+				}
+			}
+		}
+	}
+	return result;
 }
