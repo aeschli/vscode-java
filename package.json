@@ -147,6 +147,9 @@
         "mac": "cmd+alt+u",
         "when": "editorFocus"
       }
+    ],
+    "javaExtensions": [
+      { "id": "HelloPlugin", "version": "1.0.0.201707191155", "location": "javaExtensions/plugins/HelloPlugin_1.0.0.201707191155.jar" }
     ]
   },
   "scripts": {

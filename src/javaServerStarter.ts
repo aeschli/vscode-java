@@ -62,7 +62,7 @@ export function runServer(workspacePath, javaConfig): Thenable<StreamInfo> {
 function prepareParams(requirements, javaConfiguration, workspacePath) {
 	let params = [];
 	if (DEBUG) {
-		params.push('-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044');
+		params.push('-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=1044');
 		// suspend=y is the default. Use this form if you need to debug the server startup code:
 		//  params.push('-agentlib:jdwp=transport=dt_socket,server=y,address=1044');
 	}

@@ -2,7 +2,7 @@
 'use strict';
 
 import * as path from 'path';
-import { workspace, ExtensionContext, window, StatusBarAlignment, commands, ViewColumn, Uri, CancellationToken, TextDocumentContentProvider, TextEditor, WorkspaceConfiguration, languages, IndentAction, ProgressLocation, Progress } from 'vscode';
+import { workspace, extensions, ExtensionContext, window, StatusBarAlignment, commands, ViewColumn, Uri, CancellationToken, TextDocumentContentProvider, TextEditor, WorkspaceConfiguration, languages, IndentAction, ProgressLocation, Progress } from 'vscode';
 import { LanguageClient, LanguageClientOptions, Position as LSPosition, Location as LSLocation } from 'vscode-languageclient';
 import { runServer, awaitServerConnection } from './javaServerStarter';
 import { Commands } from './commands';
@@ -330,4 +330,8 @@ function openServerLogFile(workspacePath): Thenable<boolean> {
 			}
 			return didOpen;
 		});
+}
+
+function collectJavaExtension() {
+
 }
